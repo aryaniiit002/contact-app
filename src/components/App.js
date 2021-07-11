@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import './App.css';
 import Header from "./Header";
 import AddContact from "./AddContact";
@@ -7,23 +7,17 @@ import ContactList from "./ContactList";
 
 function App() {
 
-  const contacts = [
-    {
-      id: "1",
-      "name":"Aryan",
-      "email":"aryanbindal2015@gmail.com",
-    },
-    {
-      id: "2",
-      "name":"Aakash",
-      "email":"aakashbindal@gmail.com",
-    }
-  ];
+  const [contacts, setcontacts] = useState([]);
+
+  const AddContactHandler = (contact) => {
+    console.log(contact);
+    setcontacts([...contacts, contact]);
+  };
   return (
     <div className="ui container">
       <div>
         <Header />
-        <AddContact />
+        <AddContact AddContactHandler={ AddContactHandler }/>
         <ContactList contacts={contacts} />
       </div>
     </div>
