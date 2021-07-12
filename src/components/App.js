@@ -12,7 +12,9 @@ import ContactDetail from "./ContactDetail";
 function App() {
 
   //const LOCAL_STORAGE_KEY = "contacts";
-  const [contacts, setcontacts] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState("");
 
   // RetriveContacts
   const retriveContacts = async () => {
@@ -27,14 +29,14 @@ function App() {
       ...contact
     }
 
-    const reponse = await api.post("/contacts", request)
-    setcontacts([...contacts, reponse.data]);
+    const response = await api.post("/contacts", request)
+    setContacts([...contacts, response.data]);
   };
 
   const updateContactHandler = async (contact) => {
     const response = await api.put(`/contacts/${contact.id}`, contact);
     const {id, name, email} = response.data;
-    setcontacts(contacts.map((contact) => {
+    setContacts(contacts.map((contact) => {
       return contact.id === id ? {...response.data} : contact;
     })
     );
@@ -46,16 +48,29 @@ function App() {
       return contact.id !== id;
     });
 
-    setcontacts(newContactList);
+    setContacts(newContactList);
+  };
+
+  const searchHandler = (searchTerm) => {
+    setSearchTerm(searchTerm);
+    if(searchTerm !== "") {
+      const newContactList = contacts.filter((contact) => {
+        return Object.values(contact).join(" ").toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      setSearchResults(newContactList);
+    }
+    else {
+      setSearchResults(contacts);
+    }
   };
 
   useEffect( () => {
     // const retriveContacts = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))
-    // if(retriveContacts) setcontacts(retriveContacts);
+    // if(retriveContacts) setContacts(retriveContacts);
 
     const getAllContacts = async () => {
       const allContacts = await retriveContacts();
-      if(allContacts) setcontacts(allContacts);
+      if(allContacts) setContacts(allContacts);
     }
 
     getAllContacts();
@@ -72,10 +87,18 @@ function App() {
           <Header />
           <Switch>
             <Route path="/" exact
-            render={(props)=> (<ContactList {...props} contacts={contacts} getContactId={ removeContactHandler }/>)} 
+              render={(props)=> (
+              <ContactList 
+                {...props} 
+                contacts={searchTerm.length < 1 ? contacts : searchResults} 
+                getContactId={ removeContactHandler }
+                term={searchTerm}
+                searchKeyword={ searchHandler }
+            />)} 
             />
             <Route path="/add" 
-            render={(props)=> (<AddContact {...props} AddContactHandler={ AddContactHandler }/>)} 
+            render={(props)=> (<AddContact {...props} 
+              AddContactHandler={ AddContactHandler }/>)} 
             />
             <Route path="/edit" 
             render={(props)=> (<EditContact {...props} 
